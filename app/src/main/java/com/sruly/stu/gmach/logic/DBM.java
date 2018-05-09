@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 
 
@@ -19,7 +20,9 @@ public class DBM {
         db.execSQL("CREATE TABLE IF NOT EXISTS users (" +
                 "user_id INTEGER PRIMARY KEY," +
                 "first_name TEXT," +
-                "last_name TEXT" +
+                "last_name TEXT," +
+                "sum_loans REAL DEFAULT (0)," +
+                "sum_deposits REAL DEFAULT (0)" +
                 ")");
         db.execSQL("CREATE TABLE IF NOT EXISTS loans (" +
                 "loan_id INTEGER," +
@@ -46,11 +49,11 @@ public class DBM {
         return instance;
     }
 
-    public synchronized ArrayList<Operation> getOperationsForUser(User user) {
-        ArrayList<Operation> operations = new ArrayList<Operation>();
-        Cursor cursor = db.rawQuery("SELECT loan_id, user_id, first_name, last_name, loan_date, amount FROM users INNER JOIN loans ON users.user_id = loans.user_id", null);
-        if (cursor != null){
-            if (cursor.moveToFirst()){
+    public synchronized ArrayList<Operation> getOperationsForUser(long user_id) {
+        ArrayList<Operation> operations = new ArrayList<>();
+        Cursor cursor = db.rawQuery("SELECT loan_id, users.user_id, first_name, last_name, loan_date, amount FROM users INNER JOIN loans ON users.user_id = loans.user_id WHERE users.user_id = " + user_id, null);
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
                 do {
                     Operation operation = new Operation(
                             "loan",
@@ -68,11 +71,55 @@ public class DBM {
             }
             cursor.close();
         }
+        cursor = db.rawQuery("SELECT deposit_id, users.user_id, first_name, last_name, deposit_date, amount FROM users INNER JOIN deposits ON users.user_id = deposits.user_id", null);
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                do {
+                    Operation operation = new Operation(
+                            "deposit",
+                            new User(
+                                    cursor.getString(cursor.getColumnIndex("first_name")),
+                                    cursor.getString(cursor.getColumnIndex("last_name")),
+                                    cursor.getLong(cursor.getColumnIndex("user_id"))
+                            ),
+                            new Date(cursor.getLong(cursor.getColumnIndex("deposit_date"))),
+                            cursor.getDouble(cursor.getColumnIndex("amount")),
+                            0
+                    );
+                    operations.add(operation);
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
+        }
+        operations.sort(new Comparator<Operation>() {
+            @Override
+            public int compare(Operation o1, Operation o2) {
+                return o1.getDate().compareTo(o2.getDate());
+            }
+        });
         return operations;
     }
 
     public synchronized ArrayList<UserState> getAllUsersStates() {
-        return null;
+        ArrayList<UserState> userStateArrayList = new ArrayList<>();
+        Cursor cursor = db.rawQuery("SELECT * FROM users", null);
+        if (cursor.moveToFirst()) {
+            if (cursor.moveToFirst()) {
+                do {
+                    User user = new User(
+                            cursor.getString(cursor.getColumnIndex("first_name")),
+                            cursor.getString(cursor.getColumnIndex("last_name")),
+                            cursor.getLong(cursor.getColumnIndex("user_id"))
+                    );
+                    UserState userState = new UserState(user,
+                            cursor.getDouble(cursor.getColumnIndex("sum_loans")),
+                            cursor.getDouble(cursor.getColumnIndex("sum_deposits"))
+                    );
+                    userStateArrayList.add(userState);
+                } while (cursor.moveToNext());
+            }
+        }
+        return userStateArrayList;
     }
 
     public synchronized ArrayList<Deposit> getAllDeposits() {
@@ -96,17 +143,19 @@ public class DBM {
                 loan.getAmount() + "," +
                 loan.getBorrower().getId() +
                 ")");
+        db.execSQL("UPDATE users SET sum_loans = sum_loans + " + loan.getAmount() + " WHERE user_id = " + loan.getBorrower().getId());
     }
 
     public synchronized void insertDeposit(Deposit deposit) {
         insertOrUpdateUser(deposit.getDepositor());
-        db.execSQL("INSERT INTO loans (deposit_id, deposit_date, return_date, amount, user_id) VALUES(" +
+        db.execSQL("INSERT INTO deposits (deposit_id, deposit_date, return_date, amount, user_id) VALUES(" +
                 deposit.getId() + "," +
                 deposit.getdDate().getTime() + "," +
                 deposit.getrDate().getTime() + "," +
                 deposit.getAmount() + "," +
                 deposit.getDepositor().getId() +
                 ")");
+        db.execSQL("UPDATE users SET sum_deposits = sum_deposits + " + deposit.getAmount() + " WHERE user_id = " + deposit.getDepositor().getId());
     }
 
     private void insertOrUpdateUser(User user) {

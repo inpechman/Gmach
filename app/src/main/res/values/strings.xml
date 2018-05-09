@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">Gmach</string>
+    <string name="all_users_state_rv_show_history_btn_text">show history</string>
+    <string name="open_all_user_state_btn_text">show all users</string>
+    <string name="opent_new_loan_btn_text">new loan</string>
+    <string name="new_loan_first_name_field_hint">enter first name</string>
+    <string name="new_loan_last_name_field_hint">enter last name</string>
+    <string name="new_loan_user_id_field_hint">enter user id</string>
+    <string name="new_loan_return_date_field_hint">enter return date</string>
+    <string name="new_loan_enter_amount_field_hint">enter amount</string>
+    <string name="new_loan_save_btn_text">save</string>
 </resources>

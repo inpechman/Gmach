@@ -20,7 +20,8 @@
         <activity android:name=".AllUsersState" />
         <activity android:name=".GmachsDets" />
         <activity android:name=".DetsToGmach" />
-        <activity android:name=".LoansByDates"></activity>
+        <activity android:name=".LoansByDates" />
+        <activity android:name=".NewLoan"></activity>
     </application>
 
 </manifest>
