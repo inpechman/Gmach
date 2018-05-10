@@ -14,8 +14,13 @@ import com.sruly.stu.gmach.logic.User;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Locale;
 import java.util.Random;
 
 public class NewLoan extends AppCompatActivity {
@@ -24,7 +29,8 @@ public class NewLoan extends AppCompatActivity {
     DatePickerDialog datePickerDialog;
     DatePickerDialog.OnDateSetListener onDateSetListener;
     Date date = new Date(System.currentTimeMillis());
-    Calendar calendar = Calendar.getInstance();
+    Calendar calendar = GregorianCalendar.getInstance();
+    LocalDate localDate = LocalDate.of(2018, Month.MAY, 10);
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,10 +65,13 @@ public class NewLoan extends AppCompatActivity {
                         lName.getText().toString(),
                         Long.parseLong("0" + userId.getText().toString()));
                 System.out.println("AAA + " + rDate.getText().toString());
+                System.out.println("AAA " + calendar.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.US));
+                System.out.println("AAA " + localDate.format(DateTimeFormatter.ISO_DATE));
                 Loan loan =new Loan(
                         new Random().nextLong(),
                         new Date(System.currentTimeMillis()),
 //                            sdf.parse(rDate.getText().toString()),
+
                         new Date(calendar.getTimeInMillis()),
                         Double.parseDouble("0" + amount.getText().toString()),
                         user
