@@ -1,12 +1,14 @@
 package com.sruly.stu.gmach;
 
 import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.TimePicker;
 
 import com.sruly.stu.gmach.logic.DBM;
 import com.sruly.stu.gmach.logic.Loan;
@@ -27,7 +29,9 @@ public class NewLoan extends AppCompatActivity {
     EditText fName, lName, userId, amount, rDate;
     Button saveBtn;
     DatePickerDialog datePickerDialog;
+    TimePickerDialog timePickerDialog;
     DatePickerDialog.OnDateSetListener onDateSetListener;
+    TimePickerDialog.OnTimeSetListener onTimeSetListener;
     Date date = new Date(System.currentTimeMillis());
     Calendar calendar = GregorianCalendar.getInstance();
     LocalDate localDate = LocalDate.of(2018, Month.MAY, 10);
@@ -50,11 +54,20 @@ public class NewLoan extends AppCompatActivity {
             }
         };
         datePickerDialog = new DatePickerDialog(this, onDateSetListener, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE));
+        onTimeSetListener = new TimePickerDialog.OnTimeSetListener() {
+            @Override
+            public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                calendar.set(Calendar.MINUTE, minute);
+                calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+            }
+        };
+        timePickerDialog = new TimePickerDialog(this, onTimeSetListener, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true);
         rDate = findViewById(R.id.new_loan_return_Date_field);
         rDate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                     datePickerDialog.show();
+                    timePickerDialog.show();
             }
         });
         saveBtn = findViewById(R.id.new_loan_save_btn);
